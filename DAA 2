@@ -1,0 +1,222 @@
+1.Longest Palindromic Substring
+class Solution {
+    public String longestPalindrome(String s) {
+        if (s == null || s.length() < 2) {
+            return s;
+        }
+
+        int start = 0;
+        int end = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+
+            // Odd length palindrome
+            int len1 = expand(s, i, i);
+
+            // Even length palindrome
+            int len2 = expand(s, i, i + 1);
+
+            int len = Math.max(len1, len2);
+
+            if (len > end - start + 1) {
+                start = i - (len - 1) / 2;
+                end = i + len / 2;
+            }
+        }
+
+        return s.substring(start, end + 1);
+    }
+
+    private int expand(String s, int left, int right) {
+
+        while (left >= 0 && right < s.length()
+                && s.charAt(left) == s.charAt(right)) {
+
+            left--;
+            right++;
+        }
+
+        return right - left - 1;
+    }
+}
+
+2.Implement Trie(Prefix Tree)
+class Trie {
+
+    class Node {
+        Node[] children = new Node[26];
+        boolean isEnd;
+    }
+
+    Node root;
+
+    public Trie() {
+        root = new Node();
+    }
+
+    public void insert(String word) {
+        Node current = root;
+
+        for (char ch : word.toCharArray()) {
+            int index = ch - 'a';
+
+            if (current.children[index] == null) {
+                current.children[index] = new Node();
+            }
+
+            current = current.children[index];
+        }
+
+        current.isEnd = true;
+    }
+
+    public boolean search(String word) {
+        Node current = root;
+
+        for (char ch : word.toCharArray()) {
+            int index = ch - 'a';
+
+            if (current.children[index] == null) {
+                return false;
+            }
+
+            current = current.children[index];
+        }
+
+        return current.isEnd;
+    }
+
+    public boolean startsWith(String prefix) {
+        Node current = root;
+
+        for (char ch : prefix.toCharArray()) {
+            int index = ch - 'a';
+
+            if (current.children[index] == null) {
+                return false;
+            }
+
+            current = current.children[index];
+        }
+
+        return true;
+    }
+}
+
+3.Subarray Sum Equals K
+import java.util.HashMap;
+
+class Solution {
+    public int subarraySum(int[] nums, int k) {
+
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        // Prefix sum 0 occurs once
+        map.put(0, 1);
+
+        int sum = 0;
+        int count = 0;
+
+        for (int num : nums) {
+            sum += num;
+
+            // Check if a previous prefix sum = sum - k
+            if (map.containsKey(sum - k)) {
+                count += map.get(sum - k);
+            }
+
+            // Store current prefix sum
+            map.put(sum, map.getOrDefault(sum, 0) + 1);
+        }
+
+        return count;
+    }
+}
+
+
+4.Search in Rotated Sorted Array
+class Solution {
+    public int search(int[] nums, int target) {
+        int left = 0;
+        int right = nums.length - 1;
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+
+            if (nums[mid] == target) {
+                return mid;
+            }
+
+            // Left half is sorted
+            if (nums[left] <= nums[mid]) {
+                if (nums[left] <= target && target < nums[mid]) {
+                    right = mid - 1;
+                } else {
+                    left = mid + 1;
+                }
+            }
+            // Right half is sorted
+            else {
+                if (nums[mid] < target && target <= nums[right]) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+        }
+
+        return -1;
+    }
+}
+
+
+5.Minimum Window Substring
+class Solution {
+    public String minWindow(String s, String t) {
+        if (s.length() < t.length()) {
+            return "";
+        }
+
+        int[] count = new int[128];
+
+        for (char c : t.toCharArray()) {
+            count[c]++;
+        }
+
+        int left = 0;
+        int required = t.length();
+        int minLength = Integer.MAX_VALUE;
+        int start = 0;
+
+        for (int right = 0; right < s.length(); right++) {
+            char c = s.charAt(right);
+
+            if (count[c] > 0) {
+                required--;
+            }
+            count[c]--;
+
+            while (required == 0) {
+                if (right - left + 1 < minLength) {
+                    minLength = right - left + 1;
+                    start = left;
+                }
+
+                char leftChar = s.charAt(left);
+                count[leftChar]++;
+
+                if (count[leftChar] > 0) {
+                    required++;
+                }
+
+                left++;
+            }
+        }
+
+        if (minLength == Integer.MAX_VALUE) {
+            return "";
+        }
+
+        return s.substring(start, start + minLength);
+    }
+}
